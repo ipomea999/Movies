@@ -1,21 +1,43 @@
 package service;
-import models.Movie;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import models.*;
+
+import java.util.*;
 
 public class MovieMenu implements MovieService {
     private final List<Movie> movies;
 
+    private final Map<String, List<Movie>> actorIndex = new HashMap<>();
+    private final Map<String, List<Movie>> directorIndex = new HashMap<>();
+    private final Map<Integer, List<Movie>> yearIndex = new HashMap<>();
+
     public MovieMenu(List<Movie> movies) {
         this.movies = movies;
+        buildIndexes();
+    }
+
+    private void buildIndexes() {
+        for (Movie movie : movies) {
+            yearIndex.computeIfAbsent(movie.getYear(), k -> new ArrayList<>()).add(movie);
+
+            if (movie.getDirector() != null) {
+                String dirKey = movie.getDirector().getFullName().toLowerCase();
+                directorIndex.computeIfAbsent(dirKey, k -> new ArrayList<>()).add(movie);
+            }
+
+            if (movie.getCast() != null) {
+                for (Actor actor : movie.getCast()) {
+                    String actorKey = actor.getFullName().toLowerCase();
+                    actorIndex.computeIfAbsent(actorKey, k -> new ArrayList<>()).add(movie);
+                }
+            }
+        }
     }
 
     @Override
     public void printMovies(List<Movie> moviesToPrint) {
-        if (moviesToPrint.isEmpty()) {
-            System.out.println("Список пуст.");
+        if (moviesToPrint == null || moviesToPrint.isEmpty()) {
+            System.out.println("Ничего не найдено.");
             return;
         }
         for (Movie movie : moviesToPrint) {
@@ -33,7 +55,6 @@ public class MovieMenu implements MovieService {
     public List<Movie> searchByName(String query) {
         List<Movie> result = new ArrayList<>();
         String queryLower = query.toLowerCase();
-
         for (Movie movie : movies) {
             if (movie.getName().toLowerCase().contains(queryLower)) {
                 result.add(movie);
@@ -43,60 +64,86 @@ public class MovieMenu implements MovieService {
     }
 
     @Override
-    public List<Movie> sortByYear(boolean ascending) {
-        List<Movie> sortedList = new ArrayList<>(movies);
+    public List<Movie> getMoviesByActor(String actorName) {
+        List<Movie> result = new ArrayList<>();
+        String query = actorName.toLowerCase();
 
-        Comparator<Movie> byYear = new Comparator<Movie>() {
-            @Override
-            public int compare(Movie m1, Movie m2) {
-                return Integer.compare(m1.getYear(), m2.getYear());
+        for (Map.Entry<String, List<Movie>> entry : actorIndex.entrySet()) {
+            if (entry.getKey().contains(query)) {
+                for (Movie m : entry.getValue()) {
+                    if (!result.contains(m)) result.add(m);
+                }
             }
-        };
-
-        if (ascending) {
-            sortedList.sort(byYear);
-        } else {
-            sortedList.sort(byYear.reversed());
         }
-        return sortedList;
+        return result;
     }
 
     @Override
-    public List<Movie> sortByName(boolean ascending) {
-        List<Movie> sortedList = new ArrayList<>(movies);
+    public List<Movie> getMoviesByDirector(String directorName) {
+        List<Movie> result = new ArrayList<>();
+        String query = directorName.toLowerCase();
 
-        Comparator<Movie> byName = new Comparator<Movie>() {
-            @Override
-            public int compare(Movie m1, Movie m2) {
-                return m1.getName().compareToIgnoreCase(m2.getName());
+        for (Map.Entry<String, List<Movie>> entry : directorIndex.entrySet()) {
+            if (entry.getKey().contains(query)) {
+                result.addAll(entry.getValue());
             }
-        };
-
-        if (ascending) {
-            sortedList.sort(byName);
-        } else {
-            sortedList.sort(byName.reversed());
         }
-        return sortedList;
+        return result;
     }
 
     @Override
-    public List<Movie> sortByDirector(boolean ascending) {
-        List<Movie> sortedList = new ArrayList<>(movies);
+    public List<Movie> getMoviesByYear(int year) {
+        return new ArrayList<>(yearIndex.getOrDefault(year, new ArrayList<>()));
+    }
 
-        Comparator<Movie> byDirector = new Comparator<Movie>() {
-            @Override
-            public int compare(Movie m1, Movie m2) {
-                String dir1 = m1.getDirector().getFullName();
-                String dir2 = m2.getDirector().getFullName();
-                return dir1.compareToIgnoreCase(dir2);
+    @Override
+    public Map<Movie, String> getMoviesAndRolesByActor(String actorName) {
+        Map<Movie, String> result = new LinkedHashMap<>();
+        List<Movie> actorMovies = getMoviesByActor(actorName);
+        String query = actorName.toLowerCase();
+
+        for (Movie m : actorMovies) {
+            for (Actor a : m.getCast()) {
+                if (a.getFullName().toLowerCase().contains(query)) {
+                    result.put(m, a.getRole());
+                }
             }
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, Set<String>> getAllActorsWithRoles() {
+        Map<String, Set<String>> allActors = new TreeMap<>();
+
+        for (Movie movie : movies) {
+            if (movie.getCast() != null) {
+                for (Actor actor : movie.getCast()) {
+                    allActors.computeIfAbsent(actor.getFullName(), k -> new HashSet<>()).add(actor.getRole());
+                }
+            }
+        }
+        return allActors;
+    }
+
+    @Override
+    public List<Movie> sortMovies(List<Movie> moviesToSort, int sortBy, boolean ascending) {
+        List<Movie> sortedList = new ArrayList<>(moviesToSort); // Копия коллекции (без побочных эффектов)
+
+        Comparator<Movie> comparator = switch (sortBy) {
+            case 1 -> Comparator.comparingInt(Movie::getYear);
+            case 2 -> Comparator.comparing(Movie::getName, String.CASE_INSENSITIVE_ORDER);
+            case 3 -> (m1, m2) -> {
+                String d1 = m1.getDirector() != null ? m1.getDirector().getFullName() : "";
+                String d2 = m2.getDirector() != null ? m2.getDirector().getFullName() : "";
+                return String.CASE_INSENSITIVE_ORDER.compare(d1, d2);
+            };
+            default -> null;
         };
 
-        if (ascending) {
-            sortedList.sort(byDirector);
-        } else {
-            sortedList.sort(byDirector.reversed());
+        if (comparator != null) {
+            if (!ascending) comparator = comparator.reversed();
+            sortedList.sort(comparator);
         }
         return sortedList;
     }
