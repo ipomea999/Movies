@@ -128,7 +128,7 @@ public class MovieMenu implements MovieService {
 
     @Override
     public List<Movie> sortMovies(List<Movie> moviesToSort, int sortBy, boolean ascending) {
-        List<Movie> sortedList = new ArrayList<>(moviesToSort); // Копия коллекции (без побочных эффектов)
+        List<Movie> sortedList = new ArrayList<>(moviesToSort);
 
         Comparator<Movie> comparator = switch (sortBy) {
             case 1 -> Comparator.comparingInt(Movie::getYear);
