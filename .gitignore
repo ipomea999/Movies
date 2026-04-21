@@ -1,8 +1,10 @@
 ### IntelliJ IDEA ###
+/.idea
+./.idea
+.idea/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-.kotlin
 
 ### Eclipse ###
 .apt_generated
@@ -22,9 +24,3 @@ bin/
 /dist/
 /nbdist/
 /.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
