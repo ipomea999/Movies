@@ -1,7 +1,9 @@
-import models.Movie;
-import service.MovieMenu;
-import service.MovieService;
-import util.FileUtil;
+package task3;
+
+import task3.models.Movie;
+import task3.service.MovieMenu;
+import task3.service.MovieService;
+import task3.util.FileUtil;
 
 import java.util.List;
 import java.util.Map;

@@ -1,6 +1,6 @@
-package service;
+package task3.service;
 
-import models.*;
+import task3.models.*;
 
 import java.util.*;
 

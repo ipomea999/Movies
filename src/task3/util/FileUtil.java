@@ -1,7 +1,7 @@
-package util;
+package task3.util;
 
-import models.Movie;
-import models.MovieWrapper;
+import task3.models.Movie;
+import task3.models.MovieWrapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class FileUtil {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path PATH = Paths.get("src/data/movies.json");
+    private static final Path PATH = Paths.get("src/task3.data/movies.json");
 
     public static List<Movie> readMovies() {
         try {

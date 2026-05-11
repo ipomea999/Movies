@@ -1,4 +1,4 @@
-package models;
+package task3.models;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
-package service;
+package task3.service;
 
-import models.Movie;
+import task3.models.Movie;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

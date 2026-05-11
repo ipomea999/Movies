@@ -5,6 +5,7 @@
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+homeWork26.iml
 
 ### Eclipse ###
 .apt_generated

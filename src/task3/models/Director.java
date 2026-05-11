@@ -1,4 +1,4 @@
-package models;
+package task3.models;
 
 public class Director {
     private String fullName;
